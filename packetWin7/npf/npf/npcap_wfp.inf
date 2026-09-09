@@ -17,13 +17,13 @@ PnpLockDown=1
 %Insecure%=Insecure,NTx86,NTARM64,NTamd64
 
 [Insecure.NTx86]
-%NPF_Desc%=Install, INSECURE_NPCAP
+%NPF_Desc%=Install, npcap_npf
 
 [Insecure.NTARM64]
-%NPF_Desc%=Install, INSECURE_NPCAP
+%NPF_Desc%=Install, npcap_npf
 
 [Insecure.NTamd64]
-%NPF_Desc%=Install, INSECURE_NPCAP
+%NPF_Desc%=Install, npcap_npf
 
 ;-------------------------------------------------------------------------
 ; Installation Section
