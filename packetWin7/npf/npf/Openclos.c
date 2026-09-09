@@ -261,6 +261,40 @@ NPF_StopUsingBinding(
 
 _Use_decl_annotations_
 VOID
+NPF_TrackReceives(
+		PNPCAP_FILTER_MODULE pFiltMod,
+	       	ULONG NumberOfNBLs,
+	      	BOOLEAN AtDispatchLevel)
+{
+	NT_ASSERT(pFiltMod != NULL);
+	FILTER_ACQUIRE_LOCK(&pFiltMod->AdapterHandleLock, AtDispatchLevel);
+
+	NT_ASSERT(pFiltMod->AdapterBindingStatus != FilterDetached);
+
+	pFiltMod->AdapterHandleUsageCounter += NumberOfNBLs;
+	NT_ASSERT(pFiltMod->AdapterHandleUsageCounter >= NumberOfNBLs);
+
+	FILTER_RELEASE_LOCK(&pFiltMod->AdapterHandleLock, AtDispatchLevel);
+}
+
+_Use_decl_annotations_
+VOID NPF_ReleaseTrackedReceives(
+		PNPCAP_FILTER_MODULE pFiltMod,
+	       	ULONG NumberOfNBLs,
+	       	BOOLEAN AtDispatchLevel)
+{
+	NT_ASSERT(pFiltMod != NULL);
+	FILTER_ACQUIRE_LOCK(&pFiltMod->AdapterHandleLock, AtDispatchLevel);
+
+	NT_ASSERT(pFiltMod->AdapterHandleUsageCounter >= NumberOfNBLs);
+
+	pFiltMod->AdapterHandleUsageCounter -= NumberOfNBLs;
+
+	FILTER_RELEASE_LOCK(&pFiltMod->AdapterHandleLock, AtDispatchLevel);
+}
+
+_Use_decl_annotations_
+VOID
 NPF_ResetBufferContents(
 	POPEN_INSTANCE Open,
 	BOOLEAN AcquireLock
@@ -3104,11 +3138,17 @@ Arguments:
 {
 	PNPCAP_FILTER_MODULE pFiltMod = (PNPCAP_FILTER_MODULE) FilterModuleContext;
 	BOOLEAN bAtDispatchLevel = NDIS_TEST_RETURN_AT_DISPATCH_LEVEL(ReturnFlags);
+	ULONG NumberOfNBLs = 1;
+	PNET_BUFFER_LIST pNBL = NetBufferLists;
 
 #ifdef HAVE_WFP_LOOPBACK_SUPPORT
 	/* This callback is only for the NDIS LWF, not WFP/loopback */
 	NT_ASSERT(!pFiltMod->Loopback);
 #endif
+	while (pNBL = NET_BUFFER_LIST_NEXT_NBL(pNBL)) {
+		NumberOfNBLs++;
+	}
+	NPF_ReleaseTrackedReceives(pFiltMod, NumberOfNBLs, bAtDispatchLevel);
 
 	NetBufferLists = NPF_CleanupNBLs(pFiltMod, NetBufferLists, bAtDispatchLevel);
 

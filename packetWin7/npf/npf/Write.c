@@ -581,6 +581,7 @@ NPF_Write(
 				INFO_DBG("NPF_Write::SendToRxPath, Open->pFiltMod->AdapterHandle=%p, pNetBufferList=%p\n", Open->pFiltMod->AdapterHandle, pNetBufferList);
 				// pretend to receive these packets from network and indicate them to upper layers
 				RESERVED(pNetBufferList)->bReceivePath = Open->bSendToRx;
+				NPF_TrackReceives(Open->pFiltMod, 1, NPF_IRQL_UNKNOWN);
 				NdisFIndicateReceiveNetBufferLists(
 					Open->pFiltMod->AdapterHandle,
 					pNetBufferList,
@@ -937,6 +938,7 @@ NTSTATUS NPF_BufferedWrite(
 			{
 				INFO_DBG("NPF_BufferedWrite::SendToRxPath, Open->pFiltMod->AdapterHandle=%p, pNetBufferList=%p\n", Open->pFiltMod->AdapterHandle, pNetBufferList);
 				// pretend to receive these packets from network and indicate them to upper layers
+				NPF_TrackReceives(Open->pFiltMod, 1, NPF_IRQL_UNKNOWN);
 				NdisFIndicateReceiveNetBufferLists(
 					Open->pFiltMod->AdapterHandle,
 					pNetBufferList,

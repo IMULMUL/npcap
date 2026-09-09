@@ -1034,6 +1034,7 @@ NPF_TapEx(
 	if (!pFiltMod->BlockRxPath)
 	{
 #endif
+		NPF_TrackReceives(pFiltMod, NumberOfNetBufferLists, bAtDispatchLevel);
 		NdisFIndicateReceiveNetBufferLists(
 			pFiltMod->AdapterHandle,
 			NetBufferLists,
